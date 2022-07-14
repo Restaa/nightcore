@@ -21,7 +21,7 @@
 "author": "Resta Fvnky",
 "license": "MIT",
 "dependencies": {
-"@adiwajshing/baileys":"4.3.0",
+"@adiwajshing/baileys": "git+ssh://git@github.com/adiwajshing/baileys.git",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@hapi/boom": "^10.0.0",
     "awesome-phonenumber": "^2.64.0",
