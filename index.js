@@ -67,7 +67,6 @@ loadDatabase()
 if (global.db) setInterval(async () => {
     if (global.db.data) await global.db.write()
   }, 30 * 1000)
-console.log('SAVE DATABASE')
 
 function title() {
         console.clear()
@@ -89,7 +88,6 @@ function title() {
        const Resta = RestaConnect({
         logger: pino({ level: 'silent' }),
         printQRInTerminal: true,
-        browser: ['Resta Multi Device','Safari','1.0.0'],
         auth: state
         })
         title()
@@ -252,9 +250,8 @@ function title() {
     Resta.public = true
 
     Resta.serializeM = (m) => smsg(Resta, m, store)
-
-    Resta.ev.on('connection.update', async (update) => {
-	const { connection, lastDisconnect } = update
+    Resta.ev.on('connection.update', (update) => {
+		 const { connection, lastDisconnect } = update
 	      try {
 		  if (connection === 'close') {
 			let reason = new Boom(lastDisconnect?.error)?.output.statusCode
@@ -591,6 +588,27 @@ function title() {
         return buffer
     }
 
+    Resta.sendFileUrl = async (jid, url, caption, quoted, options = {}) => {
+      let mime = '';
+      let res = await axios.head(url)
+      mime = res.headers['content-type']
+      if (mime.split("/")[1] === "gif") {
+     return Resta.sendMessage(jid, { video: await getBuffer(url), caption: caption, gifPlayback: true, ...options}, { quoted: quoted, ...options})
+      }
+      let type = mime.split("/")[0]+"Message"
+      if(mime === "application/pdf"){
+     return Resta.sendMessage(jid, { document: await getBuffer(url), mimetype: 'application/pdf', caption: caption, ...options}, { quoted: quoted, ...options })
+      }
+      if(mime.split("/")[0] === "image"){
+     return Resta.sendMessage(jid, { image: await getBuffer(url), caption: caption, ...options}, { quoted: quoted, ...options})
+      }
+      if(mime.split("/")[0] === "video"){
+     return Resta.sendMessage(jid, { video: await getBuffer(url), caption: caption, mimetype: 'video/mp4', ...options}, { quoted: quoted, ...options })
+      }
+      if(mime.split("/")[0] === "audio"){
+     return Resta.sendMessage(jid, { audio: await getBuffer(url), caption: caption, mimetype: 'audio/mpeg', ...options}, { quoted: quoted, ...options })
+      }
+      }
     /**
      * 
      * @param {*} jid 
