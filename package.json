@@ -21,9 +21,10 @@
   "author": "Dika Ardnt.",
   "license": "MIT",
   "dependencies": {
-    "@adiwajshing/baileys": "4.2.0",
-    "@adiwajshing/keyed-db": "^0.2.4",
+    "@adiwajshing/baileys": "github:adiwajshing/baileys",
+    "@adiwajshing/keyed-db": "latest",
     "@hapi/boom": "^10.0.0",
+    "@bochilteam/scraper": "3.0.0",
     "awesome-phonenumber": "^2.64.0",
     "axios": "^0.24.0",
     "cfonts": "^2.9.1",

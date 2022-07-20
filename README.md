@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://a.uguu.se/MRVrrKqc.mp4'" alt="Data Base Games" width="500"/>
+<img src="https://telegra.ph/file/7a851dc177fb7959bedc1.jpg" alt="Data Base Games" width="500"/>
 
 ## Thanks To
 * [`Nurutomo`](https://github.com/BochilTeam)
