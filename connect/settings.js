@@ -3,13 +3,13 @@ const fs = require('fs')
 const chalk = require('chalk')
 
 //Ubah Disini
-global.owner = ['6283853152230']
-global.ownerName = 'Restaa x Team TKJ'
-global.namaBot =  '𝐍𝐢𝐠𝐡𝐭𝐂𝐨𝐫𝐞 𝐁𝐨𝐭'
-global.packname = '𝐍𝐢𝐠𝐡𝐭𝐂𝐨𝐫𝐞 𝐁𝐨𝐭' 
-global.author = 'TKJ x RPL'
+global.owner = ['6xxxxxxxxxx']
+global.ownerName = 'Nama Lu'
+global.namaBot =  'Nama Bot lu'
+global.packname = 'Nama Bot lu' 
+global.author = 'Nama Bot lu'
 global.prefa = ['','!','.','#','!']
-global.sessionName = 'botmd'
+global.sessionName = 'nighcore'
 //Message Nya Ubah Disini
 global.mess = {
 admin: '*ᴏɴʟʏ ᴀᴅᴍɪɴ* • ᴄᴏᴍᴍᴀɴᴅ ɪɴɪ ʜᴀɴʏᴀ ᴜɴᴛᴜᴋ ᴀᴅᴍɪɴ ɢʀᴏᴜᴘ',
