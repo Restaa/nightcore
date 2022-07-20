@@ -2,9 +2,9 @@ process.on('uncaughtException', console.error) //Safe Log Error
 require('./settings')
 const { default: makeWASocket, BufferJSON, WA_DEFAULT_EPHEMERAL, generateWAMessageFromContent, downloadContentFromMessage, downloadHistory, proto, getMessage, generateWAMessageContent, generateWAMessage, prepareWAMessageMedia, areJidsSameUser, getContentType } = require('@adiwajshing/baileys')
 const zmans = require("@adiwajshing/baileys")
+const { parseMention, smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, getRandom, generateProfilePicture, reSize} = require('../lib/myfunc')
 const axios = require('axios')
 const chalk = require('chalk')
-const  { smsg, formatp, tanggal, formatDate, getTime, isUrl, sleep, clockString, runtime, fetchJson, getBuffer, jsonformat, format, parseMention, getRandom, generateProfilePicture, reSize}= require('../lib/myfunc')
 const { exec, spawn, execSync } = require("child_process")
 const { EmojiAPI } = require("emoji-api");
 const emoji = new EmojiAPI()
@@ -25,6 +25,7 @@ const similarity = require('similarity')
 const acrcloud = require('acrcloud')
 const acr = new acrcloud({ host: "identify-ap-southeast-1.acrcloud.com", access_key: "b1cc283b4fb72483ebb6ea9c53512331", access_secret: "xyqJGTZRTrUotaraHEjji00WBClx7RpWozywdANq"})
 const yts = require('yt-search')
+const {  tiktokdl, tiktokdlv3, tiktokdlv2, instagramdl, instagramdlv2, instagramdlv3, instagramdlv4 } = require('@bochilteam/scraper')
 ///database
 let tebaklagu = db.data.game.tebaklagu = []
 let _family100 = db.data.game.family100 = []
@@ -72,7 +73,7 @@ listChannel,
 bahasalist} = require('./tutor') 
 const { print } = require("../lib/pinterest")
 const textpro = require('../lib/textpro')
-const { webp2mp4File, floNime} = require('../lib/uploader')
+const { TelegraPh, webp2mp4File, floNime} = require('../lib/uploader')
 const { toAudio, toPTT} = require('../lib/converter')
 const { dBinary, eBinary} = require('../lib/binary')
 const { yta, ytv } = require('../lib/y2mate')
@@ -100,6 +101,7 @@ const mime = (quoted.msg || quoted).mimetype || ''
 const qmsg = (quoted.msg || quoted)
 const isMedia = /image|video|sticker|audio/.test(mime)
 const from = m.key.remoteJid
+const messagesD = body.slice(0).trim().split(/ +/).shift().toLowerCase()
 const more = String.fromCharCode(8206)
 const readmore = more.repeat(4001)
 
@@ -132,9 +134,11 @@ const isCapuser = cekCapuser(m.sender)
             if (typeof chats !== 'object') global.db.data.chats[m.chat] = {}
             if (chats) {
             if (!('antilink' in chats)) chats.antilink = false
+           if (!('antivionce' in chats)) chats.antivionce = false
             if (!('nsfw' in chats)) chats.nsfw = false
             } else global.db.data.chats[m.chat] = {
             antilink: false,
+            antivionce: false,
             nsfw: false,
              }
              } catch (err) {
@@ -289,8 +293,19 @@ ${Array.from(room.jawaban, (jawaban, index) => {
               delete tekateki[m.sender.split('@')[0]]
                } 
                }   
-               
-               
+if (global.db.data.chats[m.chat].antivionce) {
+if (m.mtype == 'viewOnceMessage') {
+ teks = `「 *Anti ViewOnce Message* 」
+➯ Name : ${m.pushName}
+➯ User : @${m.sender.split("@")[0]}
+➯ Clock : ${moment.tz('Asia/Kolkata').format('HH:mm:ss')} 
+➯ Date : ${moment.tz('Asia/Kolkata').format('DD/MM/YYYY')}
+➯ MessageType : ${m.mtype}`
+Resta.sendTextWithMentions(m.chat, teks, m)
+await sleep(500)
+m.copyNForward(m.chat, true, { readViewOnce: true }).catch(_ => m.reply(`Maybe it's been opened by a bot`))
+}
+}
 //[Check Verify]//
 if (capuser.hasOwnProperty(m.sender.split('@')[0]) && isCmd) {
 jawaban = capuser[m.sender.split('@')[0]].jawaban
@@ -371,7 +386,7 @@ if (!isRegister) return m.reply(mess.regis)
  
 ╭─❒〘 LIST MENU 〙
 ├
-├❒${prefix}menuinformasi
+├❒ ${prefix}menuinformasi
 ├❒ ${prefix}menugroup
 ├❒ ${prefix}menuconvert
 ├❒ ${prefix}menudownload
@@ -444,7 +459,7 @@ let but = [
                   if (!isRegister) return m.reply(mess.regis)
                   Resta.sendText(m.chat, menugame(prefix, namaBot), m) 
                   break
-           
+
 /*************OWNER**********/
       case 'getcase':
                  if (!isOwner) return m.reply(mess.botOwner)
@@ -476,6 +491,33 @@ let but = [
                  m.reply('Sukses Broadcast')
                  }
                  break
+          case 'clear':
+           if (!isOwner && !m.key.fromMe) return m.reply(mess.botOwner)
+           let chats
+  if (/gro?up|gc/i.test(args[0])) chats = conn.chats.array.filter(v => v.jid.endsWith('g.us')).map(v => v.jid)
+  else if (/chat|private|pc/i.test(args[0])) chats = conn.chats.array.filter(v => v.jid.endsWith('.net') && !v.pin).map(v => v.jid)
+  else if (/all/i.test(args[0])) chats = conn.chats.array.filter(v => v.jid && !v.pin).map(v => v.jid)
+  else chats = [m.chat]
+  let isDelete = /^(delete)/i.test(command)
+  let isClear = /^(clear)/i.test(command)
+  m.reply(`${isDelete ? 'deleting' : isClear ? 'clearing' : 'mute'} ${chats.length} chat ${args[0] ? args[0] : ''}`)
+  for (let id of chats) {
+    if (isDelete || isClear) await Resta.modifyChat(id, (isDelete ? 'delete' : 'clear'), {
+      includeStarred: false
+    }).catch(console.log)
+    else await Resta.modifyChat(id, 'mute', -Math.floor(new Date / 1e3) * 1e3 - 1e3).catch(console.log)
+  }
+  m.reply(`_*completed*_`)
+             break
+case 'join': {
+                if (!isOwner && !m.key.fromMe) return m.reply(mess.botOwner)
+                if (!text) throw 'Masukkan Link Group!'
+                if (!isUrl(args[0]) && !args[0].includes('whatsapp.com')) throw 'Link Invalid!'
+                m.reply(mess.wait)
+                let result = args[0].split('https://chat.whatsapp.com/')[1]
+                await Resta.groupAcceptInvite(result).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+                }
+                break
 case 'bc': case 'broadcast': case 'bcall': {
   if (!isOwner && !m.key.fromMe) return m.reply(mess.botOwner)
   if (!text) throw `Text mana?\n\nExample : ${prefix + command} ${global.ownerName}`
@@ -487,15 +529,6 @@ case 'bc': case 'broadcast': case 'bcall': {
   Resta.sendText(yoi, txt)
   }
   m.reply('Sukses Broadcast')
-  }
-  break
-case 'join': {
-  if (!isOwner) return m.reply(mess.botOwner)
-  if (!text) return m.reply('Masukkan Link Group!')
-  if (!isUrl(args[0]) && !args[0].includes('whatsapp.com')) throw 'Link Invalid!'
-  m.reply(mess.wait)
-  let result = args[0].split('https://chat.whatsapp.com/')[1]
-  await Resta.groupAcceptInvite(result).then((res) => m.reply(mess.done)).catch((err) => m.reply('Fitur Error ❎'))
   }
   break
 case 'block': {
@@ -518,18 +551,6 @@ case 'setppbot': {
   let media = await Resta.downloadAndSaveMediaMessage(quoted)
   await Resta.updateProfilePicture(botNumber, { url: media }).catch((err) => fs.unlinkSync(media))
   m.reply(mess.done)
-  }
-  break
-case 'public': {
-  if (!isOwner && !m.key.fromMe) return m.reply(mess.botOwner)
-  Resta.public = true
-  m.reply('Sukses Mengubah Mode Bot Menjadi Publik')
-  }
-  break
-case 'self': {
-  if (!isOwner && !m.key.fromMe) return m.reply(mess.botOwner)
-  Resta.self = false
-  m.reply('Sukses Mengubah Mode Bot Menjadi Self')
   }
   break
 /*********************GAMER GAME**************/
@@ -723,7 +744,7 @@ case 'self': {
                     let anu = await fetchJson('https://raw.githubusercontent.com/BochilTeam/database/master/games/siapakahaku.json')
                     let result = anu[Math.floor(Math.random() * anu.length)]
                     let petunjuk = result.jawaban.replace(/[b|c|d|f|g|h|j|k|l|m|n|p|q|r|s|t|v|w|x|y|z]/gi, '_')
-                    Resta.sendText(m.chat, `Silahkan Jawab Pertanyaan Berikut\n\n${result.soal}\nPentujuk: ${pentujuk}\nWaktu : 60s`, m).then(() => {
+                    Resta.sendText(m.chat, `Silahkan Jawab Pertanyaan Berikut\n\n${result.soal}\nPentujuk: ${petunjuk}\nWaktu : 60s`, m).then(() => {
                     siapakahaku[m.sender.split('@')[0]] = result.jawaban.toLowerCase()
                     })
                     await sleep(60000)
@@ -851,6 +872,23 @@ case 'self': {
                            await Resta.sendButtonText(m.chat, buttonsantilink, `Mode ${command} 🕊️`, `Silahkan Klik Button Dibawah, Jika Button Tidak Muncul Ketik ${command} on/off`, m)
                            }
                            break
+                 case 'antivionce':
+                           if (!isRegister) return m.reply(mess.regis)
+                           if (!m.isGroup) return m.reply(mess.group)
+                           if (!isAdmins) return m.reply(mess.admin)
+                           if (args[0] === "enable") {
+                           if (global.db.data.chats[m.chat].antivionce) return m.reply(`Antivionce Aktif Sebelumnya`)
+                           global.db.data.chats[m.chat].antivionce = true
+                           m.reply(`Antivionce Di Group Berhasil Di Aktifkan !`)
+                           } else if (args[0] === "disable") {
+                           if (!global.db.data.chats[m.chat].antivionce) return m.reply(`Antivionce Nonaktif Sebelumnya`)
+                           global.db.data.chats[m.chat].antivionce = false
+                           m.reply(`Antivionce Berhasil Di Nonaktifkan !`)
+                           } else {
+                           let buttonsantilin = [{ buttonId: `${command} enable`, buttonText: { displayText: 'Enable' }, type: 1 }, { buttonId: `${command} disable`, buttonText: { displayText: 'Disable' }, type: 1 }]
+                           await Resta.sendButtonText(m.chat, buttonsantilin, `Mode ${command} 🕊️`, `Silahkan Klik Button Dibawah, Jika Button Tidak Muncul Ketik ${command} on/off`, m)
+                           }
+                           break
         case 'linkgc': {
         	       if (!isRegister) return m.reply(mess.regis)
                    if (!m.isGroup) return m.reply(mess.group)
@@ -955,19 +993,35 @@ case 'hidetag': {
   Resta.sendMessage(m.chat, { text : q ? q : 'kosong' , mentions: participants.map(a => a.id)}) 
   }
   break
-case 'ephemeral': {
-	if (!isRegister) return m.reply(mess.regis)
-  if (!m.isGroup) return m.reply(mess.group)
-  if (!isBotAdmins) return m.reply(mess.botAdmin)
-  if (!isAdmins) return m.reply(mess.admin)
-  if (!text) return m.reply('Masukkan value enable/disable')
-  if (args[0] === 'enable') {
-  await Resta.sendMessage(m.chat, { disappearingMessagesInChat: WA_DEFAULT_EPHEMERAL }).then((res) => m.reply(mess.done)).catch((err) => m.reply(jsonformat(err)))
-  } else if (args[0] === 'disable') {
-  await Resta.sendMessage(m.chat, { disappearingMessagesInChat: false }).then((res) => m.reply(mess.done)).catch((err) => m.reply(jsonformat(err)))
-  }
-  }
-  break
+     case 'ephemeral': {
+	            if (!isRegister) return m.reply(mess.regis)
+                if (!m.isGroup) return m.reply(mess.group)
+                if (!isBotAdmins) return m.reply(mess.botAdmin)
+                if (!isAdmins) return m.reply(mess.admin)
+                if (args[0] === '1') {
+                await Resta.groupToggleEphemeral(m.chat, 1*24*3600).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+                } else if (args[0] === '7') {
+                await Resta.groupToggleEphemeral(m.chat, 7*24*3600).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+                } else if (args[0] === '90') {
+                await Resta.groupToggleEphemeral(m.chat, 90*24*3600).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+                } else if (args[0] === 'off') {
+                await Resta.groupToggleEphemeral(m.chat, 0).then((res) => m.reply(jsonformat(res))).catch((err) => m.reply(jsonformat(err)))
+                } else {
+                let sections = [
+                {
+                title: "CHANGE EPHEMERAL GROUP",
+                rows: [
+                {title: "Ephemeral 1 day", rowId: `ephemeral 1`, description: `Activate the ephemeral group for 1 day`},
+                {title: "Ephemeral 7 day's", rowId: `ephemeral 7`, description: `Activate the ephemeral group for 7 day's`},
+                {title: "Ephemeral 90 days's", rowId: `ephemeral 90`, description: `Activate the ephemeral group for 90 day's`},
+                {title: "Ephemeral Off", rowId: `ephemeral off`, description: `Deactivate this Ephemeral group`}
+                ]
+                },
+                ]
+                Resta.sendListMsg(m.chat, `Please select the following Ephemeral Options List !`, Resta.user.name, `Hello Admin ${groupMetadata.subject}`, `Click Here`, sections, m)
+                }
+                }
+                break
 case 'group': {
 	if (!isRegister) return m.reply(mess.regis)
   if (!m.isGroup) return m.reply(mess.group)
@@ -1063,46 +1117,33 @@ case 'editinfo': {
                 }
                 }
                 break
-   case 'imagenobg':
-   case 'removebg': case 'remove-bg': {
-   	     if (!isRegister) return m.reply(mess.regis)
-	        if (!quoted) throw m.reply(`Kirim/Reply Image Dengan Caption ${prefix + command}`)
-	        if (!/image/.test(mime)) throw m.reply(`Kirim/Reply Image Dengan Caption ${prefix + command}`)
-	        if (/webp/.test(mime)) throw m.reply(`Kirim/Reply Image Dengan Caption ${prefix + command}`)
-	        let remobg = require('remove.bg')
-	        let apirnobg = ['q61faXzzR5zNU6cvcrwtUkRU', 'S258diZhcuFJooAtHTaPEn4T', '5LjfCVAp4vVNYiTjq9mXJWHF', 'aT7ibfUsGSwFyjaPZ9eoJc61', 'BY63t7Vx2tS68YZFY6AJ4HHF', '5Gdq1sSWSeyZzPMHqz7ENfi8', '86h6d6u4AXrst4BVMD9dzdGZ', 'xp8pSDavAgfE5XScqXo9UKHF', 'dWbCoCb3TacCP93imNEcPxcL']
-	        let apinobg = apirnobg[Math.floor(Math.random() * apirnobg.length)]
-	        hmm = await '../src/remobg-' + getRandom('')
-	        localFile = await Resta.downloadAndSaveMediaMessage(quoted, hmm)
-	        console.log(localFile)
-	        outputFile = await '../src/hremo-' + getRandom('.png')
-	        m.reply(mess.wait)
-	        try {
-		    remobg.removeBackgroundFromImageFile({
-			path: localFile,
-			apiKey: apinobg,
-    		size: "regular",
-			type: "auto",
-			scale: "100%",
-	    	outputFile
-			}).then(async result => {
-		    console.log(outputFile)
-			let tes = await fs.readFileSync(outputFile)
-			let anu = await TelegraPh(outputFile)
-			console.log(anu)
-			let hsil = await getBuffer(`https://oni-chan.my.id/api/Fmake/estetik?picturl=${anu}`)
-		    await sleep(9000)
-		    await Resta.sendMessage(m.chat, {image: hsil, caption: "success"}, {quoted: m})
-			await sleep(15000)
-			await fs.unlinkSync(localFile)
-		    await fs.unlinkSync(outputFile)
-		            		})
-		            	} catch (err) {
-		            		m.reply(util.format(err))
-		            		await fs.unlinkSync(localFile)
-		            	}
-		            }
-		            break
+     case 'imagenobg':
+     case 'removebg': case 'remove-bg': {
+       	     if (!isRegister) return m.reply(mess.regis)
+	            if (!quoted) throw m.reply(`Kirim/Reply Image Dengan Caption ${prefix + command}`)
+	            if (!/image/.test(mime)) throw m.reply(`Kirim/Reply Image Dengan Caption ${prefix + command}`)
+	            if (/webp/.test(mime)) throw m.reply(`Kirim/Reply Image Dengan Caption ${prefix + command}`)
+	            let remobg = require('remove.bg')
+	            let apirnobg = ['q61faXzzR5zNU6cvcrwtUkRU','S258diZhcuFJooAtHTaPEn4T','5LjfCVAp4vVNYiTjq9mXJWHF','aT7ibfUsGSwFyjaPZ9eoJc61','BY63t7Vx2tS68YZFY6AJ4HHF','5Gdq1sSWSeyZzPMHqz7ENfi8','86h6d6u4AXrst4BVMD9dzdGZ','xp8pSDavAgfE5XScqXo9UKHF','dWbCoCb3TacCP93imNEcPxcL']
+	            let apinobg = apirnobg[Math.floor(Math.random() * apirnobg.length)]
+	            hmm = await './src/remobg-'+getRandom('')
+	            localFile = await Resta.downloadAndSaveMediaMessage(qmsg, hmm)
+	            outputFile = await './src/hremo-'+getRandom('.png')
+	            m.reply(mess.wait)
+	            remobg.removeBackgroundFromImageFile({
+	            path: localFile,
+	            apiKey: apinobg,
+	            size: "regular",
+	            type: "auto",
+	            scale: "100%",
+	            outputFile 
+	            }).then(async result => {
+	            Resta.sendMessage(m.chat, {image: fs.readFileSync(outputFile), caption: mess.success}, { quoted : m })
+	            await fs.unlinkSync(localFile)
+	            await fs.unlinkSync(outputFile)
+	             })
+	             }
+	             break
 case 'toimage': case 'toimg': {
  if (!isRegister) return m.reply(mess.regis)
   if (!quoted) throw 'Reply Image'
@@ -1187,6 +1228,7 @@ if (!isRegister) return m.reply(mess.regis)
   await fs.unlinkSync(media)
   }
   break
+   
            case 'tinyurl':
                       if (args.length < 1) return m.reply(`Penggunaan :\n*${prefix}tinyurl link*`)
                       if (!isUrl(args[0])) return m.reply(`Masukkan link yang benar`)
@@ -1467,16 +1509,13 @@ if (!isRegister) return m.reply(mess.regis)
                         if (!text) throw m.reply(`Example : ${prefix + command} story wa anime`) 
                         let search = await yts(text)
                         m.reply(mess.wait)
-                        let anu1 = search.videos[Math.floor(Math.random() * search.videos.length)]
-                        let buttons = [{buttonId: `ytvvmp3 ${anu1.url}`, buttonText: {displayText: '♫ Audio'}, type: 1}, {buttonId: `ytmp4 ${anu1.url}`, buttonText: {displayText: '⭔ Video'}, type: 1}]
-                        let buttonMessage = {
-                        image: { url: anu1.thumbnail },
-                        caption: `*------------ PLAY SEARCH ------------*\n\n⭔ *Title* : ${anu1.title}\n⭔ *Ext* : Search\n⭔ *ID* : ${anu1.videoId}\n⭔ *Duration* : ${anu1.timestamp}\n⭔ *Viewers* : ${anu1.views}\n⭔ *Upload At* : ${anu1.ago}\n⭔ *Author* : ${anu1.author.name}`,
-                        footer: `⭔ *Url* : ${anu1.url}\n⭔ *Channel* : ${anu1.author.url}\n⭔ *Description* : ${anu1.description}`,
-                        buttons: buttons,
-                        headerType: 4 }
-                        Resta.sendMessage(m.chat, buttonMessage, { quoted: m })
-                       .catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m }))
+                        anu1 = search.videos[Math.floor(Math.random() * search.videos.length)]
+                        let caphtion = `*------------ PLAY SEARCH ------------*\n\n▢ *Title* : ${anu1.title}\n▢ *Ext* : Search\n▢ *ID* : ${anu1.videoId}\n▢ *Duration* : ${anu1.timestamp}\n▢ *Viewers* : ${anu1.views}\n▢ *Upload At* : ${anu1.ago}\n▢ *Author* : ${anu1.author.name}`
+                        let buttoos = [
+                        {urlButton: {displayText: 'Url 🔰',url: `${anu1.url}`}}, 
+                       {"quickReplyButton": {"displayText": "🎵 Music","id": `ytvvmp3 ${anu1.url}`},},
+                       {"quickReplyButton": {"displayText": "🎥 Video","id": `ytmp4 ${anu1.url}`}}]
+                       Resta.send5ButLoc(m.chat, caphtion, global.ownerName, anu1.thumbnail, buttoos, m)
                         break
              case 'yts': case 'ytsearch': 
                         if (!isRegister) return m.reply(mess.regis)
@@ -1506,7 +1545,7 @@ if (!isRegister) return m.reply(mess.regis)
 		                let txt = `*• Title:* ${title}${artists ? `\n*• Artists:* ${artists.map(v => v.name).join(', ')}` : ''}`
 		                txt += `${album ? `\n*• Album:* ${album.name}` : ''}${genres ? `\n*• Genres:* ${genres.map(v => v.name).join(', ')}` : ''}\n`
 		                txt += `*• Release Date:* ${release_date}`
-                        Resta.sendMessage(m.chat, { text: txt.trim(), buttons: [{ buttonText: { displayText: 'Play Music' }, buttonId: `${prefix}play ${title}` }] }, { quoted: m })
+                        Resta.sendMessage(m.chat, { text: txt.trim(), buttons: [{ buttonText: { displayText: 'Play Music' }, buttonId: `${prefix}playwhatmusic ${title}` }] }, { quoted: m })
 	                    } else throw m.reply(`Reply audio/video with command ${prefix + command}`)
 	                   .catch((err) => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Video tidak ditemukan'}, { quoted: m }))
 	                    break
@@ -1529,7 +1568,23 @@ if (!isRegister) return m.reply(mess.regis)
                         console.log(e)
                         }
                         break 
-/*********DOWNLOADER*************/     
+             case 'playwhatmusic':
+         	           if (!isRegister) return m.reply(mess.regis)
+                        if (!text) throw m.reply(`Example : ${prefix + command} story wa anime`) 
+                        let searsch = await yts(text)
+                        m.reply(mess.wait)
+                        let anu21 = searsch.videos[Math.floor(Math.random() * searsch.videos.length)]
+                        let buttons = [{buttonId: `ytvvmp3 ${anu21.url}`, buttonText: {displayText: '♫ Audio'}, type: 1}]
+                        let buttonMessage = {
+                        image: { url: anu21.thumbnail },
+                        caption: `*------------ PLAY WHAT MUSIC ------------*\n\n⭔ *Title* : ${anu21.title}\n⭔ *Ext* : Search\n⭔ *ID* : ${anu21.videoId}\n⭔ *Duration* : ${anu21.timestamp}\n⭔ *Viewers* : ${anu21.views}\n⭔ *Upload At* : ${anu21.ago}\n⭔ *Author* : ${anu21.author.name}`,
+                        footer: `⭔ *Url* : ${anu21.url}\n⭔ *Channel* : ${anu21.author.url}\n⭔ *Description* : ${anu1.description}`,
+                        buttons: buttons,
+                        headerType: 4 }
+                        Resta.sendMessage(m.chat, buttonMessage, { quoted: m })
+                       .catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m }))
+                        break
+/*********DOWNLOADER*************/       
           case 'joox':
                      if (!text) throw m.reply(`*Perintah ini untuk mencari lagu joox berdasarkan pencarian*\n\ncontoh:\n${prefix + command} akad`)
                      if (isUrl(text)) throw m.reply(`*Perintah ini untuk mencari lagu joox berdasarkan pencarian bukan link*\n\ncontoh:\n${prefix + command} akad`)
@@ -1544,6 +1599,26 @@ if (!isRegister) return m.reply(mess.regis)
                      Resta.sendImage(m.chat, json.img, pesan, m)
                      Resta.sendMessage(m.chat, { audio: { url: json.mp3 }, mimetype: 'audio/mpeg', fileName: `${json.penyanyi}.mp3` }, { quoted: m })
                      })
+                     break
+           case'igmp4':
+           case 'igvideo':
+                     if (!isRegister) return m.reply(mess.regis)
+                     if (!q) return m.reply(`Use example ${command} https://www.instagram.com/p/CMeFrnTp8as`)
+                     if (!isUrl(q)) throw m.reply(mess.link) 
+			         if (!q.includes('instagram.com')) return m.reply(mess.link1)
+			         m.reply(mess.wait)
+                     const results = await instagramdlv2(q)
+                     for (const { url } of results) await Resta.sendMessage(m.chat, { video: { url: url }, caption: `By Mode ${namaBot}`}, { quoted: m })
+                     break
+          case 'igfoto':
+          case 'igimage':
+                     if (!isRegister) return m.reply(mess.regis)
+                     if (!q) return m.reply(`Use example ${command} https://www.instagram.com/p/CMeFrnTp8as`)
+                     if (!isUrl(q)) throw m.reply(mess.link) 
+			         if (!q.includes('instagram.com')) return m.reply(mess.link1)
+			         m.reply(mess.wait)
+                     const resultss = await instagramdl(q)
+                     for (const { url } of resultss) await Resta.sendMessage(m.chat, { image: { url: url }, caption: `By Mode ${namaBot}` }, { quoted: m })
                      break
           case 'gitclone':
                      if (!isRegister) return m.reply(mess.regis)
@@ -1575,10 +1650,10 @@ if (!isRegister) return m.reply(mess.regis)
                      if (!isUrl(q)) throw m.reply(mess.link)
                      if (!q.includes('fb.watch') / ('facebook'))return m.reply('Link Invalid ❎')
                      await m.reply(mess.wait)
-                     api2.facebook(`${q}`) .then(result => {
-                     const otjrj = result.hd
-                     Resta.sendMessage(m.chat, {video:{url: otjrj}, mimetype:"video/mp4", caption: `${result.title}`}, {quoted:m})
-                     }).catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Video tidak ditemukan'}, { quoted: m }))
+                     noapi.aiovideodl(q) .then(result => {
+                     const ituvb = data.medias
+                     Resta.sendMessage(m.chat,  { image: { url: ituvb }, caption: `By Mode ${namaBot}` }, { quoted: m })
+                     })
                      break
            case 'soundcloud':
                      if (!isRegister) return m.reply(mess.regis)
@@ -1615,7 +1690,7 @@ if (!isRegister) return m.reply(mess.regis)
                       break
            case 'cocofun':
                       if (!isRegister) return m.reply(mess.regis)
-                      if (!q) return m.reply(`Gunakan Format : ${command} linknya`)
+                      if (!q) return m.reply(`Gunakan Format : ${command} https://www.icocofun.com/share/post/490013276810?lang=id&pkg=id&share_to=copy_link&m=253e3d90d057da0de4f9544ed67e4c54&d=0d18db9c398405eed9a59120805e336ff6dd6d841c556ada2b191c37a722a522&nt=1`)
                       if (!isUrl(q)) throw m.reply(mess.link) 
                       if (!q.includes('icocofun.com')/('cocofun.com')) return m.reply('Link Invalid ❎')
                       await m.reply(mess.wait)
@@ -1630,6 +1705,20 @@ if (!isRegister) return m.reply(mess.regis)
                       text +=`*Durasi*: ${result.duration}\n\n Wait Is Sending The Data You Request`
                       Resta.sendImage(m.chat, result.thumbnail, text, m)
                       Resta.sendMessage(from, {video:{url: result.no_watermark}, mimetype:"video/mp4", caption: `${result.caption}`}, {quoted:m})
+                      }).catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m }))
+                      break 
+           case 'likedown':
+                      if (!isRegister) return m.reply(mess.regis)
+                      if (!q) return m.reply(`Gunakan Format : ${command} https://l.likee.video/v/JvI12V`)
+                      if (!isUrl(q)) throw m.reply(mess.link) 
+                      if (!q.includes('like.com')/('l.likee')) return m.reply('Link Invalid ❎')
+                      await m.reply(mess.wait)
+                      api2.like(`${q}`) 
+                     .then(result => {
+                      let text =`*🔰Like Downloader🔰*\n`
+                      text +=`*Title*: ${result.title}\n\n Wait Is Sending The Data You Request`
+                      Resta.sendImage(m.chat, result.thumbnail, text, m)
+                      Resta.sendMessage(from, {video:{url: result.no_watermark}, mimetype:"video/mp4", caption: `${result.title}`}, {quoted:m})
                       }).catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m }))
                       break          
             case 'ytmp4': case 'ytvideo': case 'ytv':
@@ -1684,10 +1773,11 @@ if (!isRegister) return m.reply(mess.regis)
                        break
              case 'getmusic': {
                        if (!text) throw m.reply(`Example : ${prefix + command} 1`) 
-                       if (!m.quoted) return m.reply('Reply Pesan')
+                       if (!m.quoted) return m.reply('Reply Pesan Hasil Dari Ytsearch')
                        if (!m.quoted.isBaileys) throw m.reply (`Hanya Bisa Membalas Pesan Dari Bot`) 
 		               let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
                        if (!urls) throw m.reply(`Mungkin pesan yang anda reply tidak mengandung result ytsearch`) 
+                       m.reply(mess.wait)
                        let quality = args[1] ? args[1] : '128kbps'
                        let media = await yta(urls[text - 1], quality)
                        if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
@@ -1697,10 +1787,11 @@ if (!isRegister) return m.reply(mess.regis)
                       break
            case 'getvideo': {
                       if (!text) throw m.reply(`Example : ${prefix + command} 1`) 
-                      if (!m.quoted) return m.reply('Reply Pesan')
+                      if (!m.quoted) return m.reply('Reply Pesan Hasil Dari ytsearch')
                       if (!m.quoted.isBaileys) throw m.reply (`Hanya Bisa Membalas Pesan Dari Bot`) 
                       let urls = quoted.text.match(new RegExp(/(?:https?:\/\/)?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/(?:watch|v|embed|shorts)(?:\.php)?(?:\?.*v=|\/))([a-zA-Z0-9\_-]+)/, 'gi'))
-                      if (!urls) throw m.reply(`Mungkin pesan yang anda reply tidak mengandung result ytsearch`) 
+                      if (!urls) throw m.reply(`Mungkin pesan yang anda reply tidak mengandung result ytsearch`)
+                      m.reply(mess.wait)
                       let quality = args[1] ? args[1] : '360p'
                       let media = await ytv(urls[text - 1], quality)
                       if (media.filesize >= 100000) return m.reply('File Melebihi Batas '+util.format(media))
@@ -1712,14 +1803,13 @@ if (!isRegister) return m.reply(mess.regis)
                       if (!q) return m.reply(`Gunakan Format : ${command} linknya`)
                       if (!isUrl(q)) throw m.reply(mess.link1)  
                       if (!text.includes('tiktok.com')) throw m.reply(mess.link) 
-                      try {
-                      noapi.ttdownloader(`${q}`) 
+                      noapi.musically(`${q}`) 
                      .then(result => {
-                      const { wm, nowm, audio } = result
+                      const { video, video_original } = result
                       m.reply(mess.wait)
-                      let buttons = [{buttonId: `tiktokmp3 ${text}`, buttonText: {displayText: '🏷 ► Audio'}, type: 1} ]
+                      let buttons = [{buttonId: `tiktokmp3 ${text}`, buttonText: {displayText: '🏷 ► Audio'}, type: 1}]
                       let buttonMessage = {
-                      video: { url: wm },
+                      video: { url: video },
                       caption: `Download From ${text}`,
                       footer: 'Press The Button Below',
                       buttons: buttons,
@@ -1727,51 +1817,36 @@ if (!isRegister) return m.reply(mess.regis)
                       }
                       Resta.sendMessage(m.chat, buttonMessage, { quoted: m })
                       }) 
-                      } catch (err) {
-                      await Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m })
-                      }
                       }
                       break
-          case 'tiktoknowm': {
-   	               if (!isRegister) return m.reply(mess.regis)
-                      if (!q) return m.reply(`Gunakan Format : ${command} linknya`)
-                      if (!isUrl(q)) throw m.reply(mess.link1)  
-                      if (!text.includes('tiktok.com')) throw m.reply(mess.link) 
-                      try {
-                      noapi.ttdownloader(`${q}`) 
-                     .then(result => {
-                      const { wm, nowm, audio } = result 
-                      m.reply(mess.wait)
-                      let buttons = [{buttonId: `tiktokmp3 ${text}`, buttonText: {displayText: '🏷 ► Audio'}, type: 1} ]
-                      let buttonMessage = {
-                      video: { url: nowm },
-                      caption: `Download From ${text}`,
-                      footer: 'Press The Button Below',
-                      buttons: buttons,
-                      headerType: 5
-                      }
-                      Resta.sendMessage(m.chat, buttonMessage, { quoted: m })
-                      }) 
-                      } catch (err) {
-                      await Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m })
-                      }
-                      }
-                      break
-           case 'tiktokmp3':
-           case 'tiktokmusic':
+          case'tiktoknowm':
+                     if (!isRegister) return m.reply(mess.regis)
+                     if (args.length < 1) return m.reply(`Kirim perintah ${command} link`)
+			         if (!isUrl(args[0])) return m.reply(mess.link)
+		             if (!args[0].includes('tiktok')) return m.reply(mess.link)
+		             m.reply(mess.wait)
+                     const { author: { nickname }, video, description } = await tiktokdl(args[0]).catch(async _ => await tiktokdlv2(args[0]))
+                     const url = video.no_watermark_raw || video.no_watermark || video.no_watermark_hd || video.with_watermark 
+                     if (!url) throw m.reply( 'Can\'t download video!')
+	                 taex = `🧏 *Nickname:* ${nickname}${description ? `\n🔰 *Description:* ${description}` : ''}\nJika Ingin Mengubah Ke Audio Ketik *${prefix}tiktikmusic*`
+                     Resta.sendMessage(m.chat, { video: { url: url },caption: taex }, { quoted: m })
+                     break  
+          case 'tiktokmp3':
+          case 'tiktokmusic':
                       if (!isRegister) return m.reply(mess.regis)
                       if (args.length < 1) return m.reply(`Kirim perintah ${command} link`)
 			          if (!isUrl(args[0])) return m.reply(mess.link)
 			          if (!args[0].includes('tiktok')) return m.reply(mess.link)
 			          m.reply(mess.wait)
 			          try {
-			          noapi.ttdownloader(args[0]).then( data => {
-			          Resta.sendMessage(from, { audio: { url: data.nowm }, mimetype: 'audio/mp4' }, { quoted: m })
+			          noapi.musically(args[0]).then(result => {
+				      const { audio } = result
+			          Resta.sendMessage(from, { audio: { url: audio }, mimetype: 'audio/mp4' }, { quoted: m })
 			          })
 	                  } catch (err) {
                       await Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m })
                       }
-		             break   
+		              break 
           case 'twitdl': case 'twitter': {
            	      if (!isRegister) return m.reply(mess.regis)
                      if (!q) throw m.reply(`Example : ${prefix + command} https://twitter.com/britneyspears/status/1535429257614217219?s=20`) 
@@ -1880,6 +1955,7 @@ if (!isRegister) return m.reply(mess.regis)
                    if (!isRegister) return m.reply(mess.regis)
                    m.reply('*Script Berasal Dari :* https://github.com/Restaa/bot-md\n\nJangan Lupa Bintang nya!')
                    break
+       
 case 'ping': case 'botstatus': case 'statusbot': case 'speed': case 'tes': {
   const used = process.memoryUsage()
   const cpus = os.cpus().map(cpu => {
@@ -1927,6 +2003,7 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
   m.reply(respon)
   }
   break
+
                
 /***************OTHER**************/
    case 'nowa':
@@ -2281,6 +2358,7 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
          case 'asupan':
                    if (!isRegister) return m.reply(mess.regis)
 		           if (!q) return m.reply (`Example : ${prefix + command} ukhty\n\nList Asupan Yang Tersedia\n• ukhty\n• santuy\n• random\n\nContoh : ${prefix + command} random` ) 
+		           if (!q.includes('random','ukhty','santuy')) throw m.reply(`Maaf ${command} ${q} Tidak Tersedia`)
                    m.reply(mess.wait)
                    buffer = `https://api.zacros.my.id/asupan/${q}`
                    try {
@@ -2563,8 +2641,7 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
                     text +=`*Description*: ${result.description}\n`
                     Resta.sendImage(m.chat, result.thumb, text, m)
                     }).catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m }))
-                    break
-          
+                    break         
           case 'otakudesuinfo':
                     if (!isRegister) return m.reply(mess.regis)
                     if (!q) throw m.reply(`Example : ${prefix + command} https://otakudesu.watch/anime/borto-sub-indo/`)
@@ -2620,7 +2697,7 @@ ${cpus.map((cpu, i) => `${i + 1}. ${cpu.model.trim()} (${cpu.speed} MHZ)\n${Obje
                      let acak = onnhg[Math.floor(Math.random() * onnhg.length)];
                      anu = acak
                      await Resta.sendMessage(m.chat, { image : { url: anu}, caption: `${command} ${text}`}, { quoted: m })
-                    .catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '💔️ Maaf, Data tidak ditemukan'}, { quoted: m }))
+                    .catch(() => Resta.sendMessage(m.chat, { image : { url:  global.erorurl }, caption: '??️ Maaf, Data tidak ditemukan'}, { quoted: m }))
                      break;
 /*************BATAS MENU ISLAM***********/ l
          case 'jadwalsholat':

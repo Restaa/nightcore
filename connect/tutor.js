@@ -229,7 +229,8 @@ return`
 ┞➯ ${prefix}listchannel
 ┞➯ ${prefix}listblock
 ┞➯ ${prefix}jadwalbola
-┞➯ ${prefix}niwa [ 62xxxxx ]
+┞➯ ${prefix}join [ link ]
+┞➯ ${prefix}nowa [ 62xxxxx ]
 ┞➯ ${prefix}tts [ bahasa ] [ text ]
 │
 ╰╼╾⟤〘 ${namaBot} 〙`
@@ -308,6 +309,9 @@ return`
 ┞➯ ${prefix}ytmp3 [ link yt ]
 ┞➯ ${prefix}ytmp4 [ link yt ] 
 ┞➯ ${prefix}tiktok [ link ]
+┞➯ ${prefix}igvideo [ link ]
+┞➯ ${prefix}igfoto [ link ]
+┞➯ ${prefix}likdown [ link ]
 ┞➯ ${prefix}tiktoknowm [ link ]
 ┞➯ ${prefix}tiktokmusic [ link ] 
 ┞➯ ${prefix}twitter [ link ] 
