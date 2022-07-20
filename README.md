@@ -5,6 +5,15 @@
 * [`Nurutomo`](https://github.com/BochilTeam)
 * [`Restaa`](https://github.com/Restaa)
 
+## With Run Termux 
+
+# pkg upgrade && pkg update
+# pkg install nodejs
+# pkg install yarn
+# pkg install ffmpeg
+# cd [ Name File ]
+# yarn
+# npm start / node index.js
 
 ## Connect With Me
 * [`Group WhatsApp`](https://chat.whatsapp.com/IVmyObV0quv8j7fpNomn6j)
