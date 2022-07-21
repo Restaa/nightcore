@@ -229,9 +229,15 @@ return`
 ┞➯ ${prefix}listchannel
 ┞➯ ${prefix}listblock
 ┞➯ ${prefix}jadwalbola
+┞➯ ${prefix}afk [ _alasan_ ]
 ┞➯ ${prefix}join [ link ]
 ┞➯ ${prefix}nowa [ 62xxxxx ]
-┞➯ ${prefix}tts [ bahasa ] [ text ]
+┞➯ ${prefix}tembakpasangan [ @tag ]
+┞➯ ${prefix}terimapasangan [ @tag ]
+┞➯ ${prefix}cekpasangan [ @tag|62xxx ]
+┞➯ ${prefix}putuspasangan [ @tag|62xxx ]
+┞➯ ${prefix}tolakpasangan [ @tag|62xxx ]
+┞➯ ${prefix}ikhlasinpasangan
 │
 ╰╼╾⟤〘 ${namaBot} 〙`
 }
@@ -614,6 +620,7 @@ return`
 ┞➯ ${prefix}tebakkimia
 ┞➯ ${prefix}tebakgambar 
 ┞➯ ${prefix}tebakbendera 
+┞➯ ${prefix}tebakkabupaten
 ┞➯ ${prefix}tebakkalimat
 ┞➯ ${prefix}siapakahaku
 ┞➯ ${prefix}caklontong
