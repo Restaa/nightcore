@@ -5,6 +5,20 @@
 * [`Nurutomo`](https://github.com/BochilTeam)
 * [`Restaa`](https://github.com/Restaa)
 
+* [`menuother`] ✔️
+* [`menugroup`] ✔️
+* [`menuconvert`] ✔️
+* [`menudownload`] ✔️
+* [`menusearch`] ✔️
+* [`menurandom`] ✔️
+* [`menuislam`] ✔️
+* [`menugame`] ✔️
+* [`menuprimbon`] ✔️
+* [`menutextmaker`] ✔️
+* [`menuanime`] ✔️
+* [`menunsfw`] ✔️
+
+
 ## With Run Termux 
 
 pkg upgrade && pkg update
