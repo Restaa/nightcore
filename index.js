@@ -33,11 +33,8 @@ const wit = moment.tz('Asia/Jayapura').format('HH:mm:ss')
 
 const { Low, JSONFile } = low
 const mongoDB = require('./lib/mongoDB')
-
 global.api = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({ ...query, ...(apikeyqueryname ? { [apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name] } : {}) })) : '')
-
 const store = makeInMemoryStore({ logger: pino().child({ level: 'silent', stream: 'store' }) })
-
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 global.db = new Low(
   /https?:\/\//.test(opts['db'] || '') ?
@@ -55,6 +52,7 @@ global.loadDatabase = async function loadDatabase() {
   global.db.data = {
     chats: {},
     users: {},
+    pasangan: {},
     database: {},
     game: {},
     ...(global.db.data || {})
@@ -169,9 +167,8 @@ function title() {
                 } catch {
                     ppgroup = 'https://tinyurl.com/yx93l6da'
                 }
-
                 if (anu.action == 'add') {
-                    Resta.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `Welcome To ${metadata.subject} @${num.split("@")[0]}` })
+                Resta.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `Welcome To ${metadata.subject} @${num.split("@")[0]}` })
                 } else if (anu.action == 'remove') {
                     Resta.sendMessage(anu.id, { image: { url: ppuser }, mentions: [num], caption: `@${num.split("@")[0]} Leaving To ${metadata.subject}` })
                 } else if (anu.action == 'promote') {
@@ -665,6 +662,54 @@ function title() {
 	return buffer
      } 
     
+    Resta.sendFile = async (jid, path, filename = '', caption = '', quoted, ptt = false, options = {}) => {
+        let type = await conn.getFile(path, true)
+        let { res, data: file, filename: pathFile } = type
+        if (res && res.status !== 200 || file.length <= 65536) {
+        try { throw { json: JSON.parse(file.toString()) } }
+        catch (e) { if (e.json) throw e.json }
+        }
+        let opt = { filename }
+        if (quoted) opt.quoted = quoted
+        if (!type) options.asDocument = true
+        let mtype = '', mimetype = type.mime, convert
+        if (/webp/.test(type.mime) || (/image/.test(type.mime) && options.asSticker)) mtype = 'sticker'
+        else if (/image/.test(type.mime) || (/webp/.test(type.mime) && options.asImage)) mtype = 'image'
+        else if (/video/.test(type.mime)) mtype = 'video'
+        else if (/audio/.test(type.mime)) (
+        convert = await (ptt ? toPTT : toAudio)(file, type.ext),
+        file = convert.data,
+       pathFile = convert.filename,
+       mtype = 'audio',
+       mimetype = 'audio/ogg; codecs=opus'
+        )
+        else mtype = 'document'
+        if (options.asDocument) mtype = 'document'
+
+        delete options.asSticker
+        delete options.asLocation
+        delete options.asVideo
+        delete options.asDocument
+        delete options.asImage
+
+        let message = {
+            ...options,
+            caption,
+            ptt,
+            [mtype]: { url: pathFile },
+            mimetype
+        }
+        let m
+        try {
+            m = await Resta.sendMessage(jid, message, { ...opt, ...options })
+        } catch (e) {
+            console.error(e)
+            m = null
+        } finally {
+            if (!m) m = await Resta.sendMessage(jid, { ...message, [mtype]: file }, { ...opt, ...options })
+            return m
+        }
+    }
     /**
      * 
      * @param {*} jid 
@@ -743,29 +788,30 @@ function title() {
         return waMessage
     }
 
-    Resta.cMod = (jid, copy, text = '', sender = Resta.user.id, options = {}) => {
-        //let copy = message.toJSON()
-		let mtype = Object.keys(copy.message)[0]
-		let isEphemeral = mtype === 'ephemeralMessage'
-        if (isEphemeral) {
-            mtype = Object.keys(copy.message.ephemeralMessage.message)[0]
-        }
-        let msg = isEphemeral ? copy.message.ephemeralMessage.message : copy.message
-		let content = msg[mtype]
+    Resta.cMod = async (jid, message, text = '', sender = Resta.user.jid, options = {}) => {
+        if (options.mentions && !Array.isArray(options.mentions)) options.mentions = [options.mentions]
+        let copy = message.toJSON()
+        delete copy.message.messageContextInfo
+        delete copy.message.senderKeyDistributionMessage
+        let mtype = Object.keys(copy.message)[0]
+        let msg = copy.message
+        let content = msg[mtype]
         if (typeof content === 'string') msg[mtype] = text || content
-		else if (content.caption) content.caption = text || content.caption
-		else if (content.text) content.text = text || content.text
-		if (typeof content !== 'string') msg[mtype] = {
-			...content,
-			...options
+        else if (content.caption) content.caption = text || content.caption
+        else if (content.text) content.text = text || content.text
+        if (typeof content !== 'string') {
+            msg[mtype] = { ...content, ...options }
+            msg[mtype].contextInfo = {
+                ...(content.contextInfo || {}),
+                mentionedJid: options.mentions || content.contextInfo?.mentionedJid || []
+            }
         }
-        if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
-		else if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
-		if (copy.key.remoteJid.includes('@s.whatsapp.net')) sender = sender || copy.key.remoteJid
-		else if (copy.key.remoteJid.includes('@broadcast')) sender = sender || copy.key.remoteJid
-		copy.key.remoteJid = jid
-		copy.key.fromMe = sender === Resta.user.id
-
+        if (copy.participant) sender = copy.participant = sender || copy.participant
+        else if (copy.key.participant) sender = copy.key.participant = sender || copy.key.participant
+        if (copy.key.remoteJid.includes('@s.whatsapp.net')) sender = sender || copy.key.remoteJid
+        else if (copy.key.remoteJid.includes('@broadcast')) sender = sender || copy.key.remoteJid
+        copy.key.remoteJid = jid
+        copy.key.fromMe = areJidsSameUser(sender, Resta.user.id) || false
         return proto.WebMessageInfo.fromObject(copy)
     }
 
